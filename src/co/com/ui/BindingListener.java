@@ -5,12 +5,14 @@ import java.lang.reflect.Method;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import co.com.model.BadgeTemplateModel;
+
 public class BindingListener implements DocumentListener {
-	private BadgeTemplateModel model;
+	private BadgeTemplateModel dataModel;
 	private String fieldName;
 
-	public BindingListener(BadgeTemplateModel model, String fieldName) {
-		this.model = model;
+	public BindingListener(BadgeTemplateModel dataModel, String fieldName) {
+		this.dataModel = dataModel;
 		String firstChar = String.valueOf(fieldName.charAt(0));
 		if (firstChar.equals(firstChar.toLowerCase())) {
 			fieldName = firstChar.toUpperCase() + fieldName.substring(1, fieldName.length());
@@ -41,8 +43,8 @@ public class BindingListener implements DocumentListener {
 			stringValue = stringValue.trim();
 			if (!stringValue.isEmpty()) {
 				int intValue = Integer.parseInt(stringValue);
-				Method method = model.getClass().getDeclaredMethod("set" + fieldName, Integer.class);
-				method.invoke(model, intValue);
+				Method method = dataModel.getClass().getDeclaredMethod("set" + fieldName, Integer.class);
+				method.invoke(dataModel, intValue);
 			}
 		} catch (Exception e1) {
 		}

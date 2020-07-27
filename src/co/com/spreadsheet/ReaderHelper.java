@@ -15,8 +15,12 @@ public class ReaderHelper {
 	boolean hasHeader = false;
 	String delimiter;
 	String encoding;
-	List<String[]> lines;
+	List<String[]> fileLines;
 	Map<String, Integer> header;
+
+	public ReaderHelper() {
+		
+	}
 
 	public ReaderHelper(String pathCSV) {
 		initialize(pathCSV, false, ",", "UTF-8");
@@ -38,7 +42,7 @@ public class ReaderHelper {
 		Path path = Paths.get(this.pathCSV);
 		if (Files.exists(path)) {
 			try {
-				this.lines = Files.lines(path, Charset.forName(this.encoding)).map(l -> l.split(this.delimiter))
+				this.fileLines = Files.lines(path, Charset.forName(this.encoding)).map(l -> l.split(this.delimiter))
 						.collect(Collectors.toList());
 			} catch (IOException e) {
 				return;
@@ -46,11 +50,11 @@ public class ReaderHelper {
 
 			if (this.hasHeader) {
 				this.header = new HashMap<>();
-				String headerArray[] = this.lines.get(0);
+				String headerArray[] = this.fileLines.get(0);
 				for (int i = 0; i < headerArray.length; i++) {
 					this.header.put(headerArray[i], i);
 				}
-				this.lines.remove(0);
+				this.fileLines.remove(0);
 			}
 		}
 	}
@@ -63,18 +67,18 @@ public class ReaderHelper {
 	public String getField(int row, int column) {
 		String fieldValue = null;
 		try {
-			fieldValue = this.lines.get(row)[column];
+			fieldValue = this.fileLines.get(row)[column];
 		} catch (Exception e) {
 
 		}
 		return fieldValue;
 	}
 
-	public List<String[]> getLines() {
-		return this.lines;
+	public List<String[]> getFileLines() {
+		return this.fileLines;
 	}
 
 	public int getNumberRows() {
-		return this.lines.size();
+		return this.fileLines.size();
 	}
 }

@@ -13,6 +13,8 @@ import java.util.Observer;
 
 import javax.swing.JPanel;
 
+import co.com.model.BadgeTemplateModel;
+
 public class JPanelImage extends JPanel implements Observer {
 
 	/**
@@ -21,13 +23,13 @@ public class JPanelImage extends JPanel implements Observer {
 	private static final long serialVersionUID = 9182926349993472897L;
 	private BufferedImage image;
 	private int posMouseX, posMouseY;
-	private BadgeTemplateModel model;
+	private BadgeTemplateModel dataModel;
 
-	public JPanelImage(BadgeTemplateModel model) {
+	public JPanelImage(BadgeTemplateModel dataModel) {
 		posMouseX = 0;
 		posMouseY = 0;
-		this.model = model;
-		this.model.addObserver(this);
+		this.dataModel = dataModel;
+		this.dataModel.addObserver(this);
 		addMouseMotionListener(new MouseMotionHandler());
 		addMouseListener(new MouseHandler());
 	}
@@ -51,10 +53,10 @@ public class JPanelImage extends JPanel implements Observer {
 				g2.setColor(Color.RED);
 				g2.drawString(position, posMouseX, posMouseY - 3);
 			}
-			int posX = model.getPosXImgTmpl();
-			int posY = model.getPosYImgTmpl();
+			int posX = dataModel.getPosXImgTmpl();
+			int posY = dataModel.getPosYImgTmpl();
 			if (posX >= 0 && posY >= 0) {
-				g.drawRect(posX, posY, model.getWidthImgTmpl(), model.getHeightImgTmpl());
+				g.drawRect(posX, posY, dataModel.getWidthImgTmpl(), dataModel.getHeightImgTmpl());
 			}
 		}
 	}
@@ -64,9 +66,12 @@ public class JPanelImage extends JPanel implements Observer {
 		repaint();
 	}
 
+	/* (non-Javadoc)
+	 * Repaint mouse position and image frame.
+	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
+	 */
 	@Override
 	public void update(Observable o, Object arg) {
-		System.out.println("Observer2: " + o);
 		repaint();
 	}
 
@@ -83,9 +88,9 @@ public class JPanelImage extends JPanel implements Observer {
 			posMouseX = e.getX();
 			posMouseY = e.getY();
 			JPanelImage source = (JPanelImage) e.getSource();
-			model.deleteObserver(source);
-			model.setSizeImageTemplate(e.getX(), e.getY());
-			model.addObserver(source);
+			dataModel.deleteObserver(source);
+			dataModel.setSizeImageTemplate(e.getX(), e.getY());
+			dataModel.addObserver(source);
 			repaint();
 		}
 	}
@@ -96,9 +101,9 @@ public class JPanelImage extends JPanel implements Observer {
 			posMouseX = e.getX();
 			posMouseY = e.getY();
 			JPanelImage source = (JPanelImage) e.getSource();
-			model.deleteObserver(source);
-			model.setPositionImageTemplate(e.getX(), e.getY());
-			model.addObserver(source);
+			dataModel.deleteObserver(source);
+			dataModel.setPositionImageTemplate(e.getX(), e.getY());
+			dataModel.addObserver(source);
 		}
 
 		@Override

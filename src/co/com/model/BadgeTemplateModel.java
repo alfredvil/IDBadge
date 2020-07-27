@@ -1,4 +1,4 @@
-package co.com.ui;
+package co.com.model;
 
 import java.util.Observable;
 
@@ -14,13 +14,26 @@ public class BadgeTemplateModel extends Observable {
 	int posYImgTmpl;
 	int widthImgTmpl;
 	int heightImgTmpl;
-	int posYCargoTmpl;
-	int posYNombreTmpl;
-	int posYCedRHTmpl;
+	int posYRoleTmpl;
+	int posYNameTmpl;
+	int posYIDAndRHTmpl;
+	String roleColumnName;
+	String nameColumnName;
+	String idColumnName;
+	String typeIDColumnName;
+	String rhColumnName;
+	String imageColumnName;
 
 	public BadgeTemplateModel() {
 		csvFileDelimiter = ",";
 		csvFileEncoding = "UTF-8";
+		posXImgTmpl = posYImgTmpl = widthImgTmpl = heightImgTmpl = posYRoleTmpl = posYNameTmpl = posYIDAndRHTmpl = -1;
+		roleColumnName="Cargo";
+		nameColumnName="Nombre";
+		idColumnName="Cedula";
+		typeIDColumnName="TipoCC";
+		rhColumnName="RH";
+		imageColumnName="Foto";
 	}
 
 	public synchronized String getTemplateFile() {
@@ -119,42 +132,94 @@ public class BadgeTemplateModel extends Observable {
 		notifyObservers();
 	}
 
-	public synchronized int getPosYCargoTmpl() {
-		return posYCargoTmpl;
+	public synchronized int getPosYRoleTmpl() {
+		return posYRoleTmpl;
 	}
 
-	public synchronized void setPosYCargoTmpl(Integer posYCargoTmpl) {
+	public synchronized void setPosYRoleTmpl(Integer posYRoleTmpl) {
 		synchronized (this) {
-			this.posYCargoTmpl = posYCargoTmpl;
+			this.posYRoleTmpl = posYRoleTmpl;
 		}
 		setChanged();
 		notifyObservers();
 	}
 
-	public synchronized int getPosYNombreTmpl() {
-		return posYNombreTmpl;
+	public synchronized int getPosYNameTmpl() {
+		return posYNameTmpl;
 	}
 
-	public void setPosYNombreTmpl(Integer posYNombreTmpl) {
+	public void setPosYNameTmpl(Integer posYNameTmpl) {
 		synchronized (this) {
-			this.posYNombreTmpl = posYNombreTmpl;
+			this.posYNameTmpl = posYNameTmpl;
 		}
 		setChanged();
 		notifyObservers();
 	}
 
-	public synchronized int getPosYCedRHTmpl() {
-		return posYCedRHTmpl;
+	public synchronized int getPosYIDAndRHTmpl() {
+		return posYIDAndRHTmpl;
 	}
 
-	public void setPosYCedRHTmpl(Integer posYCedRHTmpl) {
+	public void setPosYIDAndRHTmpl(Integer posYIDAndRHTmpl) {
 		synchronized (this) {
-			this.posYCedRHTmpl = posYCedRHTmpl;
+			this.posYIDAndRHTmpl = posYIDAndRHTmpl;
 		}
 		setChanged();
 		notifyObservers();
 	}
-	
+
+	public String getRoleColumnName() {
+		return roleColumnName;
+	}
+
+	public void setRoleColumnName(String roleColumnName) {
+		this.roleColumnName = roleColumnName;
+	}
+
+	public String getNameColumnName() {
+		return nameColumnName;
+	}
+
+	public void setNameColumnName(String nameColumnName) {
+		this.nameColumnName = nameColumnName;
+	}
+
+	public String getIdColumnName() {
+		return idColumnName;
+	}
+
+	public void setIdColumnName(String typeIDColumnName) {
+		this.idColumnName = typeIDColumnName;
+	}
+
+	public String getTypeIDColumnName() {
+		return typeIDColumnName;
+	}
+
+	public void setTypeIDColumnName(String typeIDColumnName) {
+		this.typeIDColumnName = typeIDColumnName;
+	}
+
+	public String getRhColumnName() {
+		return rhColumnName;
+	}
+
+	public void setRhColumnName(String rhColumnName) {
+		this.rhColumnName = rhColumnName;
+	}
+
+	public String getImageColumnName() {
+		return imageColumnName;
+	}
+
+	public void setImageColumnName(String imageColumnName) {
+		this.imageColumnName = imageColumnName;
+	}
+
+	public void setPosYRoleTmpl(int posYRoleTmpl) {
+		this.posYRoleTmpl = posYRoleTmpl;
+	}
+
 	public void setPositionImageTemplate(int posX, int posY) {
 		synchronized (this) {
 			this.posXImgTmpl = posX;
@@ -163,7 +228,7 @@ public class BadgeTemplateModel extends Observable {
 		setChanged();
 		notifyObservers();
 	}
-	
+
 	public void setSizeImageTemplate(int posX2, int posY2) {
 		synchronized (this) {
 			this.widthImgTmpl = Math.abs(this.posXImgTmpl - posX2);
@@ -171,5 +236,16 @@ public class BadgeTemplateModel extends Observable {
 		}
 		setChanged();
 		notifyObservers();
+	}
+
+	public boolean isModelComplete() {
+		return isFieldValid(templateFile) && isFieldValid(csvFile) && isFieldValid(csvFileDelimiter)
+				&& isFieldValid(csvFileEncoding) && isFieldValid(inputFolder) && isFieldValid(outputFolder)
+				&& posXImgTmpl >= 0 && posYImgTmpl >= 0 && widthImgTmpl >= 0 && heightImgTmpl >= 0 && posYRoleTmpl >= 0
+				&& posYNameTmpl >= 0 && posYIDAndRHTmpl >= 0;
+	}
+
+	private boolean isFieldValid(String field) {
+		return field != null && !field.isEmpty();
 	}
 }
