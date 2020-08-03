@@ -4,10 +4,10 @@ import java.util.Observable;
 
 public class BadgeResultModel extends Observable {
 
-	int totalRecords;
-	int validRecords;
-	int errorRecords;
-	StringBuilder log;
+	private int totalRecords;
+	private int validRecords;
+	private int errorRecords;
+	private StringBuilder log;
 
 	public BadgeResultModel() {
 		init();

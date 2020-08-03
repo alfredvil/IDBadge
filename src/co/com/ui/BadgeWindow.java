@@ -1,6 +1,7 @@
 package co.com.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -13,7 +14,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
+
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.nio.charset.Charset;
 import java.util.Locale;
 import java.util.Observable;
@@ -21,16 +25,23 @@ import java.util.Observer;
 import java.util.Properties;
 
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
+import org.drjekyll.fontchooser.FontDialog;
+
 import co.com.image.ImageHelper;
+import co.com.model.BadgeImageModel;
 import co.com.model.BadgeResultModel;
 import co.com.model.BadgeTemplateModel;
+import co.com.model.BadgeTextModel;
 import co.com.process.ProcessController;
+import co.com.ui.listener.ImageBindingListener;
+import co.com.ui.listener.TextBindingListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -40,9 +51,10 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 import javax.swing.JSplitPane;
@@ -55,19 +67,21 @@ public class BadgeWindow implements Observer {
 	private BufferedImage sourceImgage;
 	private BadgeTemplateModel dataModel;
 	private BadgeResultModel resultModel;
+	private BadgeImageModel imageModel;
+	private BadgeTextModel textModels[];
 	private ProcessController processController;
 
 	private JFrame frame;
-	JTabbedPane tabbedPane;
-	JPanel panelConfig;
+	private JTabbedPane tabbedPane;
+	private JPanel panelConfig;
 	private JTextField templateImage;
 	private JTextField folderImages;
 	private JTextField csvFile;
 	private JComboBox<?> encoding;
 	private JTextField folderResult;
 	private JSplitPane panelDesign;
-	JPanel panelPositions;
-	JPanelImage panelImage;
+	private JPanel panelPositions;
+	private JPanelImage panelImage;
 	private JTextField posXImgTmpl;
 	private JTextField posYImgTmpl;
 	private JTextField imageWidth;
@@ -75,14 +89,15 @@ public class BadgeWindow implements Observer {
 	private JTextField posYRole;
 	private JTextField posYName;
 	private JTextField posYIDAndRH;
-	JPanel panelResults;
+	private JPanel panelResults;
 	private int width = 650;
 	private int height = 800;
 	private JLabel totalRecords;
 	private JLabel validRecords;
 	private JLabel errorRecords;
 	private JTextArea textAreaLog;
-	private JProgressBar progressBar; 
+	private JProgressBar progressBar;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -103,11 +118,30 @@ public class BadgeWindow implements Observer {
 	 * Create the application.
 	 */
 	public BadgeWindow() {
+		try {
+			Font fontMuseoSans = Font.createFont(Font.TRUETYPE_FONT,
+					BadgeWindow.class.getClassLoader().getResourceAsStream("resources/fonts/MuseoSans_700.otf"));
+			Font fontMuseoSansCondensed = Font.createFont(Font.TRUETYPE_FONT,
+					BadgeWindow.class.getClassLoader().getResourceAsStream("resources/fonts/MuseoSansCondensed-700.ttf"));
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			ge.registerFont(fontMuseoSans);
+			ge.registerFont(fontMuseoSansCondensed);
+		}catch(Exception e) {}
+		
 		this.dataModel = new BadgeTemplateModel();
 		this.resultModel = new BadgeResultModel();
+		this.imageModel = new BadgeImageModel();
+		this.textModels = new BadgeTextModel[3];
 		this.dataModel.addObserver(this);
+		this.imageModel.addObserver(this);
 		this.resultModel.addObserver(this);
-		this.processController = new ProcessController(dataModel, resultModel);
+		this.textModels[0] = new BadgeTextModel();
+		this.textModels[0].addObserver(this);
+		this.textModels[1] = new BadgeTextModel();
+		this.textModels[1].addObserver(this);
+		this.textModels[2] = new BadgeTextModel();
+		this.textModels[2].addObserver(this);
+		this.processController = new ProcessController(dataModel, imageModel, textModels, resultModel);
 		initialize();
 		loadProperties();
 	}
@@ -119,14 +153,11 @@ public class BadgeWindow implements Observer {
 	 */
 	@Override
 	public void update(Observable o, Object arg) {
-		if (o instanceof BadgeTemplateModel) {
-			this.posXImgTmpl.setText("" + dataModel.getPosXImgTmpl());
-			this.posYImgTmpl.setText("" + dataModel.getPosYImgTmpl());
-			this.imageWidth.setText("" + dataModel.getWidthImgTmpl());
-			this.imageHeight.setText("" + dataModel.getHeightImgTmpl());
-			this.posYRole.setText("" + dataModel.getPosYRoleTmpl());
-			this.posYName.setText("" + dataModel.getPosYNameTmpl());
-			this.posYIDAndRH.setText("" + dataModel.getPosYIDAndRHTmpl());
+		if (o instanceof BadgeImageModel) {
+			this.posXImgTmpl.setText("" + imageModel.getPosXImgTmpl());
+			this.posYImgTmpl.setText("" + imageModel.getPosYImgTmpl());
+			this.imageWidth.setText("" + imageModel.getWidthImgTmpl());
+			this.imageHeight.setText("" + imageModel.getHeightImgTmpl());
 		} else if (o instanceof BadgeResultModel) {
 			this.totalRecords.setText("" + resultModel.getTotalRecords());
 			this.errorRecords.setText("" + resultModel.getErrorRecords());
@@ -321,7 +352,7 @@ public class BadgeWindow implements Observer {
 		panelPositions = new JPanel();
 		panelPositions.setSize(width, height);
 		panelPositions.setLayout(null);
-		panelImage = new JPanelImage(dataModel);
+		panelImage = new JPanelImage(imageModel, textModels);
 		JScrollPane scrollPane = new JScrollPane(panelImage, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setAutoscrolls(true);
@@ -339,114 +370,189 @@ public class BadgeWindow implements Observer {
 		tabbedPane.addTab(BUNDLE.getString("design_panel_name"), null, panelDesign, null);
 
 		/* Datos de la foto */
-		int yMovPos = 10;
-		int widthVar = 150;
-
+		int accumulatedHeight = 10;
+		int lineYPos=25;
+		int heightVar = lineYPos*2;
+		int iniX=5, iniY=accumulatedHeight;
+		
 		JPanel panelImage = new JPanel();
 		panelImage.setBorder(new TitledBorder(null, BUNDLE.getString("design_photo_label"), TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
-		panelImage.setBounds(5, yMovPos, 180, widthVar);
 		panelImage.setLayout(null);
 		panelPositions.add(panelImage);
 
 		JLabel lblImgPosX = new JLabel(BUNDLE.getString("design_photo_posx"));
 		lblImgPosX.setHorizontalAlignment(SwingConstants.LEFT);
-		lblImgPosX.setBounds(12, 25, 100, 17);
+		lblImgPosX.setBounds(12, lineYPos, 100, 19);
 		panelImage.add(lblImgPosX);
 		posXImgTmpl = new JTextField();
 		posXImgTmpl.setColumns(10);
-		posXImgTmpl.setBounds(106, 25, 50, 19);
-		posXImgTmpl.getDocument().addDocumentListener(new BindingListener(dataModel, "posXImgTmpl"));
+		posXImgTmpl.setBounds(106, lineYPos, 50, 19);
+		posXImgTmpl.getDocument().addDocumentListener(new ImageBindingListener(imageModel, "posXImgTmpl"));
 		panelImage.add(posXImgTmpl);
-
+		
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
 		JLabel lblImgPosY = new JLabel(BUNDLE.getString("design_photo_posy"));
 		lblImgPosY.setHorizontalAlignment(SwingConstants.LEFT);
-		lblImgPosY.setBounds(12, 54, 100, 17);
+		lblImgPosY.setBounds(12, lineYPos, 100, 19);
 		panelImage.add(lblImgPosY);
 		posYImgTmpl = new JTextField();
 		posYImgTmpl.setColumns(10);
-		posYImgTmpl.setBounds(106, 54, 50, 19);
-		posYImgTmpl.getDocument().addDocumentListener(new BindingListener(dataModel, "posYImgTmpl"));
+		posYImgTmpl.setBounds(106, lineYPos, 50, 19);
+		posYImgTmpl.getDocument().addDocumentListener(new ImageBindingListener(imageModel, "posYImgTmpl"));
 		panelImage.add(posYImgTmpl);
 
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
 		JLabel lblImgWidth = new JLabel(BUNDLE.getString("design_photo_width"));
 		lblImgWidth.setHorizontalAlignment(SwingConstants.LEFT);
-		lblImgWidth.setBounds(12, 83, 100, 17);
+		lblImgWidth.setBounds(12, lineYPos, 100, 19);
 		panelImage.add(lblImgWidth);
 		imageWidth = new JTextField();
 		imageWidth.setColumns(10);
-		imageWidth.setBounds(106, 83, 50, 19);
-		imageWidth.getDocument().addDocumentListener(new BindingListener(dataModel, "widthImgTmpl"));
+		imageWidth.setBounds(106, lineYPos, 50, 19);
+		imageWidth.getDocument().addDocumentListener(new ImageBindingListener(imageModel, "widthImgTmpl"));
 		panelImage.add(imageWidth);
 
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
 		JLabel lblImgHeight = new JLabel(BUNDLE.getString("design_photo_height"));
 		lblImgHeight.setHorizontalAlignment(SwingConstants.LEFT);
-		lblImgHeight.setBounds(12, 112, 100, 17);
+		lblImgHeight.setBounds(12, lineYPos, 100, 19);
 		panelImage.add(lblImgHeight);
 		imageHeight = new JTextField();
 		imageHeight.setColumns(10);
-		imageHeight.setBounds(106, 112, 50, 19);
-		imageHeight.getDocument().addDocumentListener(new BindingListener(dataModel, "heightImgTmpl"));
+		imageHeight.setBounds(106, lineYPos, 50, 19);
+		imageHeight.getDocument().addDocumentListener(new ImageBindingListener(imageModel, "heightImgTmpl"));
 		panelImage.add(imageHeight);
 
-		yMovPos += widthVar + 10;
-		widthVar = 60;
+		panelImage.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		
+		/** Role block **/
+		iniY=accumulatedHeight+10;
+		lineYPos=25;
+		accumulatedHeight+=lineYPos;
+		
 		JPanel panelRole = new JPanel();
 		panelRole.setBorder(new TitledBorder(null, BUNDLE.getString("design_role_label"), TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
-		panelRole.setBounds(5, yMovPos, 180, widthVar);
 		panelRole.setLayout(null);
 		panelPositions.add(panelRole);
 
 		JLabel lblPosyRole = new JLabel(BUNDLE.getString("design_role_posy"));
 		lblPosyRole.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPosyRole.setBounds(12, 25, 100, 17);
+		lblPosyRole.setBounds(12, lineYPos, 100, 19);
 		panelRole.add(lblPosyRole);
 		posYRole = new JTextField();
 		posYRole.setColumns(10);
-		posYRole.setBounds(106, 25, 50, 19);
-		posYRole.getDocument().addDocumentListener(new BindingListener(dataModel, "posYRoleTmpl"));
+		posYRole.setBounds(106, lineYPos, 50, 19);
+		posYRole.getDocument().addDocumentListener(new TextBindingListener(textModels[0], "posY"));
 		panelRole.add(posYRole);
-
-		yMovPos += widthVar + 10;
+		
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
+		JLabel lblRoleFont = new JLabel(BUNDLE.getString("design_font"));
+		lblRoleFont.setHorizontalAlignment(SwingConstants.LEFT);
+		lblRoleFont.setBounds(12, lineYPos, 100, 19);
+		panelRole.add(lblRoleFont);
+		JLabel lblSetRoleFont = new JLabel(BUNDLE.getString("design_role_eg"));
+		lblSetRoleFont.setText(textModels[0].getFontDescription());
+		lblSetRoleFont.setToolTipText(textModels[0].getFontDescription());
+		lblSetRoleFont.setHorizontalAlignment(SwingConstants.LEFT);
+		lblSetRoleFont.setBounds(106, lineYPos, 50, 19);
+		lblSetRoleFont.addMouseListener(new MouseAdapter()  {  
+		    public void mouseClicked(MouseEvent e) {
+		    	textModels[0].setFont(loadFontChooser());
+				lblSetRoleFont.setText(textModels[0].getFontDescription());
+		    	lblSetRoleFont.setToolTipText(textModels[0].getFontDescription());
+		    }
+		}); 
+		panelRole.add(lblSetRoleFont);
+		
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
+		JLabel lblRoleColor = new JLabel(BUNDLE.getString("design_color"));
+		lblRoleColor.setHorizontalAlignment(SwingConstants.LEFT);
+		lblRoleColor.setBounds(12, lineYPos, 100, 19);
+		panelRole.add(lblRoleColor);
+		JLabel lblSetRoleColor = new JLabel();
+		lblSetRoleColor.setOpaque(true);
+		lblSetRoleColor.setBackground(textModels[0].getColor());
+		lblSetRoleColor.setHorizontalAlignment(SwingConstants.LEFT);
+		lblSetRoleColor.setBounds(106, lineYPos, 50, 19);
+		lblSetRoleColor.addMouseListener(new MouseAdapter()  {  
+		    public void mouseClicked(MouseEvent e) {
+		    	lblSetRoleColor.setBackground(loadColorChooser());
+		    	textModels[0].setColor(lblSetRoleColor.getBackground());
+		    }  
+		});
+		panelRole.add(lblSetRoleColor);
+		
+		this.textModels[0].setText(BUNDLE.getString("design_role_eg"));
+		panelRole.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		
+		/** Name block **/
+		iniY=accumulatedHeight+10;
+		lineYPos=25;
+		accumulatedHeight+=lineYPos;
+		
 		JPanel panelName = new JPanel();
 		panelName.setBorder(new TitledBorder(null, BUNDLE.getString("design_name_label"), TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
-		panelName.setBounds(5, yMovPos, 180, widthVar);
 		panelName.setLayout(null);
 		panelPositions.add(panelName);
 
 		JLabel lblPosyNombre = new JLabel(BUNDLE.getString("design_name_posy"));
 		lblPosyNombre.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPosyNombre.setBounds(12, 25, 100, 17);
+		lblPosyNombre.setBounds(12, lineYPos, 100, 19);
 		panelName.add(lblPosyNombre);
 		posYName = new JTextField();
 		posYName.setColumns(10);
-		posYName.setBounds(106, 25, 50, 19);
-		posYName.getDocument().addDocumentListener(new BindingListener(dataModel, "posYNameTmpl"));
+		posYName.setBounds(106, lineYPos, 50, 19);
+		posYName.getDocument().addDocumentListener(new TextBindingListener(textModels[1], "posY"));
 		panelName.add(posYName);
 
-		yMovPos += widthVar + 10;
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
+		
+		this.textModels[1].setText(BUNDLE.getString("design_name_eg"));
+		panelName.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		
+		/** ID and RH block **/
+		iniY=accumulatedHeight+10;
+		lineYPos=25;
+		accumulatedHeight+=lineYPos;
+		
 		JPanel panelIDAndRH = new JPanel();
 		panelIDAndRH.setBorder(new TitledBorder(null, BUNDLE.getString("design_id_label"), TitledBorder.LEADING,
 				TitledBorder.TOP, null, null));
-		panelIDAndRH.setBounds(5, yMovPos, 180, widthVar);
 		panelIDAndRH.setLayout(null);
 		panelPositions.add(panelIDAndRH);
 
 		JLabel lblPosyCedRH = new JLabel(BUNDLE.getString("design_id_posy"));
 		lblPosyCedRH.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPosyCedRH.setBounds(12, 25, 100, 17);
+		lblPosyCedRH.setBounds(12, lineYPos, 100, 17);
 		panelIDAndRH.add(lblPosyCedRH);
 		posYIDAndRH = new JTextField();
 		posYIDAndRH.setColumns(10);
-		posYIDAndRH.setBounds(106, 25, 50, 19);
-		posYIDAndRH.getDocument().addDocumentListener(new BindingListener(dataModel, "posYIDAndRHTmpl"));
+		posYIDAndRH.setBounds(106, lineYPos, 50, 19);
+		posYIDAndRH.getDocument().addDocumentListener(new TextBindingListener(textModels[1], "posY"));
 		panelIDAndRH.add(posYIDAndRH);
-
-		yMovPos += widthVar + 10;
+		
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
+		
+		this.textModels[2].setText(BUNDLE.getString("design_id_eg"));
+		panelIDAndRH.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		
+		
+		/** Process Button block **/
+		iniY=accumulatedHeight+10;
+		lineYPos=25;
+		accumulatedHeight+=lineYPos;
+		
 		JPanel panelProcess = new JPanel();
-		panelProcess.setBounds(5, yMovPos, 180, widthVar);
 		JButton processBtn = new JButton(BUNDLE.getString("process_btn"));
 		processBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -458,12 +564,16 @@ public class BadgeWindow implements Observer {
 					progressBar.setVisible(true);
 					TitledBorder border = (TitledBorder)progressBar.getBorder();
 					border.setTitle(BUNDLE.getString("in_progress_bar"));
-					processController = new ProcessController(dataModel, resultModel);
+					processController = new ProcessController(dataModel, imageModel, textModels, resultModel);
 					processController.start();
 				}
 			}
 		});
 		panelProcess.add(processBtn);
+		lineYPos+=29;
+		accumulatedHeight += heightVar;		
+		panelProcess.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		
 		panelPositions.add(panelProcess);
 	}
 
@@ -554,14 +664,19 @@ public class BadgeWindow implements Observer {
 
 	protected File openFileChooser(JTextField field, int optionChooser, FileNameExtensionFilter filter) {
 		JFileChooser chooser = new JFileChooser();
-		chooser.setFileFilter(filter);
-		chooser.setFileSelectionMode(optionChooser);
-		chooser.setAcceptAllFileFilterUsed(false);
-		int returnVal = chooser.showOpenDialog(null);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			field.setText(chooser.getSelectedFile().getPath());
-			System.out.println("You chose to open this file: " + chooser.getSelectedFile().getName());
-			return chooser.getSelectedFile();
+		try {
+			chooser.setCurrentDirectory(new File(".").getCanonicalFile());
+			chooser.setFileFilter(filter);
+			chooser.setFileSelectionMode(optionChooser);
+			chooser.setAcceptAllFileFilterUsed(false);
+			int returnVal = chooser.showOpenDialog(null);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				field.setText(chooser.getSelectedFile().getPath());
+				System.out.println("You chose to open this file: " + chooser.getSelectedFile().getName());
+				return chooser.getSelectedFile();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -576,6 +691,23 @@ public class BadgeWindow implements Observer {
 			panelImage.setImage(sourceImgage);
 			panelImage.setSize(sourceImgage.getWidth(), sourceImgage.getHeight());
 		}
+	}
+	
+	private Font loadFontChooser() {
+		FontDialog dialog = new FontDialog( );
+		dialog.setTitle("Font Dialog Example");
+		dialog.setModal(true);
+		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		dialog.setVisible(true);
+		if (!dialog.isCancelSelected()) {
+		  System.out.printf("Selected font is: %s%n", dialog.getSelectedFont());
+		  return dialog.getSelectedFont();
+		}
+		return null;
+	}
+	
+	private Color loadColorChooser() {
+		return JColorChooser.showDialog(null, "Choose a color", new Color(104, 57, 114));
 	}
 
 	private void loadProperties() {
@@ -611,31 +743,31 @@ public class BadgeWindow implements Observer {
 				setValueToField(value, folderResult);
 				
 				value = prop.getProperty("posXImgTmpl","-1");
-				dataModel.setPosXImgTmpl(Integer.valueOf(value));
+				imageModel.setPosXImgTmpl(Integer.valueOf(value));
 				setValueToField(value, posXImgTmpl);
 
 				value = prop.getProperty("posYImgTmpl","-1");
-				dataModel.setPosYImgTmpl(Integer.valueOf(value));
+				imageModel.setPosYImgTmpl(Integer.valueOf(value));
 				setValueToField(value, posYImgTmpl);
 
 				value = prop.getProperty("widthImgTmpl","-1");
-				dataModel.setWidthImgTmpl(Integer.valueOf(value));
+				imageModel.setWidthImgTmpl(Integer.valueOf(value));
 				setValueToField(value, imageWidth);
 
 				value = prop.getProperty("heightImgTmpl","-1");
-				dataModel.setHeightImgTmpl(Integer.valueOf(value));
+				imageModel.setHeightImgTmpl(Integer.valueOf(value));
 				setValueToField(value, imageHeight);
 
 				value = prop.getProperty("posYRoleTmpl","-1");
-				dataModel.setPosYRoleTmpl(Integer.valueOf(value));
+				textModels[0].setPosY(Integer.valueOf(value));
 				setValueToField(value, posYRole);
 
 				value = prop.getProperty("posYNameTmpl","-1");
-				dataModel.setPosYNameTmpl(Integer.valueOf(value));
+				textModels[1].setPosY(Integer.valueOf(value));
 				setValueToField(value, posYName);
 				
 				value = prop.getProperty("posYIDAndRHTmpl","-1");
-				dataModel.setPosYIDAndRHTmpl(Integer.valueOf(value));
+				textModels[2].setPosY(Integer.valueOf(value));
 				setValueToField(value, posYIDAndRH);
 
 				value = prop.getProperty("nameColumnName","Nombre");

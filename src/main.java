@@ -8,7 +8,11 @@ import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JColorChooser;
 import javax.swing.JLabel;
+import javax.swing.WindowConstants;
+
+import org.drjekyll.fontchooser.FontDialog;
 
 import co.com.image.ImageHelper;
 import co.com.model.BadgeTextModel;
@@ -18,6 +22,19 @@ public class main {
 
 	public static void main(String[] args) {
 		
+		FontDialog dialog = new FontDialog( );
+		dialog.setTitle("Font Dialog Example");
+		dialog.setModal(true);
+		//null, , true);
+		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		dialog.setVisible(true);
+		if (!dialog.isCancelSelected()) {
+		  System.out.printf("Selected font is: %s%n", dialog.getSelectedFont());
+		}
+		System.out.printf("FinalSelected font is: %s%n", dialog.getSelectedFont());
+		Color color = JColorChooser.showDialog(null, "Choose a color", new Color(104, 57, 114));
+		System.out.printf("Selected color is: %s%n", color);
+				
 		//System.out.println(Charset.availableCharsets().keySet());
 		/*
 		ReaderHelper readerCSV = new ReaderHelper("/home/lucho/Desktop/Bibi/CarneFilarmonica/lista.csv", true, ",","x-MacRoman");
@@ -27,8 +44,9 @@ public class main {
 		
 		int width = 963; // width of the image
 		int height = 640; // height of the image
-		*/
+		
 		// For storing image in RAM
+		
 		BufferedImage imageFrom = null;
 		BufferedImage imageTo = null;
 		BufferedImage imageFinal = null;
@@ -53,12 +71,6 @@ public class main {
 			textModel.setColor(new Color(104, 57, 114));
 			ImageHelper.printStringArrayTo(imageTo, new BadgeTextModel[]{textModel});
 			
-			/*
-			 	posXImgTmpl=186
-				posYImgTmpl=209
-				widthImgTmpl=263
-				heightImgTmpl=287
-			 * */
 		} catch (Exception e) {
 			System.out.println("Error: " + e);
 		}
@@ -75,6 +87,6 @@ public class main {
 		} catch (IOException e) {
 			System.out.println("Error: " + e);
 		}
+		*/
 	}
-
 }

@@ -1,15 +1,9 @@
 package co.com.image;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.awt.font.TextAttribute;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -60,17 +54,18 @@ public class ImageHelper {
 
 	public static void printStringArrayTo(BufferedImage imageTo, BadgeTextModel textModelArray[]) {
 		Graphics2D g2d = (Graphics2D) imageTo.getGraphics();
-		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		printStringArrayTo(g2d, textModelArray,imageTo.getWidth());
+	}
 
-		int imageWidth = imageTo.getWidth();
+	public static void printStringArrayTo(Graphics2D g2d, BadgeTextModel textModelArray[], int imageWidth) {
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		
 		for(BadgeTextModel textModel:textModelArray) {
 			AttributedString text = new AttributedString(textModel.getText());
 			text.addAttribute(TextAttribute.FONT, textModel.getFont(), 0, textModel.getText().length());
 			text.addAttribute(TextAttribute.FOREGROUND, textModel.getColor(), 0, textModel.getText().length());
-			
-			g2d.drawString(text.getIterator(), (imageWidth-textModel.getTextWidth())/2, textModel.getPosY());
+			int size = (imageWidth-textModel.getTextWidth())/2;
+			g2d.drawString(text.getIterator(), size, textModel.getPosY()+textModel.getTextHeight()-8);
 		}
 		g2d.dispose();
 	}

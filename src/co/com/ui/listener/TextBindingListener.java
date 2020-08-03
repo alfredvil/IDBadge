@@ -1,17 +1,19 @@
-package co.com.ui;
+package co.com.ui.listener;
 
 import java.lang.reflect.Method;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import co.com.model.BadgeImageModel;
 import co.com.model.BadgeTemplateModel;
+import co.com.model.BadgeTextModel;
 
-public class BindingListener implements DocumentListener {
-	private BadgeTemplateModel dataModel;
+public class TextBindingListener implements DocumentListener {
+	private BadgeTextModel dataModel;
 	private String fieldName;
 
-	public BindingListener(BadgeTemplateModel dataModel, String fieldName) {
+	public TextBindingListener(BadgeTextModel dataModel, String fieldName) {
 		this.dataModel = dataModel;
 		String firstChar = String.valueOf(fieldName.charAt(0));
 		if (firstChar.equals(firstChar.toLowerCase())) {

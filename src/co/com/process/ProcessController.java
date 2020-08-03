@@ -11,6 +11,7 @@ import java.util.ResourceBundle;
 import javax.imageio.ImageIO;
 
 import co.com.image.ImageHelper;
+import co.com.model.BadgeImageModel;
 import co.com.model.BadgeResultModel;
 import co.com.model.BadgeTemplateModel;
 import co.com.model.BadgeTextModel;
@@ -20,13 +21,17 @@ public class ProcessController extends Thread {
 	private static ResourceBundle BUNDLE = ResourceBundle.getBundle("resources.messages", Locale.getDefault());
 
 	private BadgeTemplateModel dataModel;
+	private BadgeImageModel imageModel;
+	private BadgeTextModel textModels[];
 	private BadgeResultModel resultModel;
 	private ReaderHelper readerHelper;
 
-	public ProcessController(BadgeTemplateModel dataModel, BadgeResultModel resultModel) {
+	public ProcessController(BadgeTemplateModel dataModel, BadgeImageModel imageModel, BadgeTextModel textModels[], BadgeResultModel resultModel) {
 		super();
 		this.readerHelper = new ReaderHelper();
 		this.dataModel = dataModel;
+		this.imageModel = imageModel;
+		this.textModels = textModels;
 		this.resultModel = resultModel;
 	}
 
@@ -46,11 +51,6 @@ public class ProcessController extends Thread {
 				// Opening the template file
 				File templateFile = new File(this.dataModel.getTemplateFile());
 				BufferedImage templateBufImage = ImageHelper.loadImage(templateFile);
-				Font fntRole = Font.createFont(Font.TRUETYPE_FONT,getClass().getClassLoader().getResourceAsStream("resources/fonts/MuseoSans_700.otf"));
-				fntRole = fntRole.deriveFont(28f);
-				Font fntName = Font.createFont(Font.TRUETYPE_FONT,getClass().getClassLoader().getResourceAsStream("resources/fonts/MuseoSansCondensed-700.ttf"));
-				fntName = fntName.deriveFont(44f);
-				Color color = new Color(104, 57, 114);
 
 				for (int row = 0; row < this.readerHelper.getNumberRows(); row++) {
 					String name = this.readerHelper.getField(row, this.dataModel.getNameColumnName());
@@ -64,17 +64,17 @@ public class ProcessController extends Thread {
 						File imageFile = new File(this.dataModel.getInputFolder() + File.separatorChar + img);
 						BufferedImage imageFrom = ImageHelper.loadImage(imageFile);
 						// Fitting record image to the defined size
-						imageFrom = ImageHelper.fitToSizeImage(imageFrom, dataModel.getWidthImgTmpl(),dataModel.getHeightImgTmpl());
+						imageFrom = ImageHelper.fitToSizeImage(imageFrom, imageModel.getWidthImgTmpl(),imageModel.getHeightImgTmpl());
 						BufferedImage imageTo = ImageHelper.deepCopy(templateBufImage);
 						// Pasting record image into the template
-						ImageHelper.copyImageTo(imageFrom, imageTo, dataModel.getPosXImgTmpl(),
-								dataModel.getPosYImgTmpl());
+						ImageHelper.copyImageTo(imageFrom, imageTo, imageModel.getPosXImgTmpl(),
+								imageModel.getPosYImgTmpl());
 
 						// Printing texts
-						BadgeTextModel nameTM = new BadgeTextModel(name, this.dataModel.getPosYNameTmpl(), fntName, color);
-						BadgeTextModel cargoTM = new BadgeTextModel(role, this.dataModel.getPosYRoleTmpl(), fntRole, color);
+						BadgeTextModel cargoTM = new BadgeTextModel(role, this.textModels[0].getPosY(), this.textModels[0].getFont(), this.textModels[0].getColor());
+						BadgeTextModel nameTM = new BadgeTextModel(name, this.textModels[1].getPosY(), this.textModels[1].getFont(), this.textModels[1].getColor());
 						String idAndRH = typeID + " " + id + "		RH " + rh;
-						BadgeTextModel idAndRHTM = new BadgeTextModel(idAndRH, this.dataModel.getPosYIDAndRHTmpl(), fntName, color);
+						BadgeTextModel idAndRHTM = new BadgeTextModel(idAndRH, this.textModels[2].getPosY(), this.textModels[2].getFont(), this.textModels[2].getColor());
 						ImageHelper.printStringArrayTo(imageTo, new BadgeTextModel[] { nameTM, cargoTM, idAndRHTM });
 
 						// Saving image in the output folder

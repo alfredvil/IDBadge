@@ -13,7 +13,9 @@ import java.util.Observer;
 
 import javax.swing.JPanel;
 
-import co.com.model.BadgeTemplateModel;
+import co.com.image.ImageHelper;
+import co.com.model.BadgeImageModel;
+import co.com.model.BadgeTextModel;
 
 public class JPanelImage extends JPanel implements Observer {
 
@@ -23,13 +25,21 @@ public class JPanelImage extends JPanel implements Observer {
 	private static final long serialVersionUID = 9182926349993472897L;
 	private BufferedImage image;
 	private int posMouseX, posMouseY;
-	private BadgeTemplateModel dataModel;
+	private BadgeImageModel imageModel;
+	private BadgeTextModel textModels[];
 
-	public JPanelImage(BadgeTemplateModel dataModel) {
+	public JPanelImage(BadgeImageModel imageModel, BadgeTextModel textModels[]) {
 		posMouseX = 0;
 		posMouseY = 0;
-		this.dataModel = dataModel;
-		this.dataModel.addObserver(this);
+		//Image Model
+		this.imageModel = imageModel;
+		this.imageModel.addObserver(this);
+		//Text Models
+		this.textModels = textModels;
+		this.textModels[0].addObserver(this);//Role
+		this.textModels[1].addObserver(this);//Name
+		this.textModels[2].addObserver(this);//Id and RH
+		
 		addMouseMotionListener(new MouseMotionHandler());
 		addMouseListener(new MouseHandler());
 	}
@@ -45,19 +55,21 @@ public class JPanelImage extends JPanel implements Observer {
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		if (image != null) {
+		if( image != null ) {
 			Graphics2D g2 = (Graphics2D) g;
-			g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+			g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
 			if (posMouseX >= 0 && posMouseX <= image.getWidth() && posMouseY >= 0 || posMouseY <= image.getHeight()) {
 				String position = "(" + posMouseX + "," + posMouseY + ")";
 				g2.setColor(Color.RED);
 				g2.drawString(position, posMouseX, posMouseY - 3);
 			}
-			int posX = dataModel.getPosXImgTmpl();
-			int posY = dataModel.getPosYImgTmpl();
-			if (posX >= 0 && posY >= 0) {
-				g.drawRect(posX, posY, dataModel.getWidthImgTmpl(), dataModel.getHeightImgTmpl());
+			int posX = imageModel.getPosXImgTmpl();
+			int posY = imageModel.getPosYImgTmpl();
+			if( posX >= 0 && posY >= 0 ) {
+				g2.drawRect(posX, posY, imageModel.getWidthImgTmpl(), imageModel.getHeightImgTmpl());
 			}
+			
+			ImageHelper.printStringArrayTo(g2, textModels, image.getWidth());
 		}
 	}
 
@@ -88,9 +100,9 @@ public class JPanelImage extends JPanel implements Observer {
 			posMouseX = e.getX();
 			posMouseY = e.getY();
 			JPanelImage source = (JPanelImage) e.getSource();
-			dataModel.deleteObserver(source);
-			dataModel.setSizeImageTemplate(e.getX(), e.getY());
-			dataModel.addObserver(source);
+			imageModel.deleteObserver(source);
+			imageModel.setSizeImageTemplate(e.getX(), e.getY());
+			imageModel.addObserver(source);
 			repaint();
 		}
 	}
@@ -101,9 +113,9 @@ public class JPanelImage extends JPanel implements Observer {
 			posMouseX = e.getX();
 			posMouseY = e.getY();
 			JPanelImage source = (JPanelImage) e.getSource();
-			dataModel.deleteObserver(source);
-			dataModel.setPositionImageTemplate(e.getX(), e.getY());
-			dataModel.addObserver(source);
+			imageModel.deleteObserver(source);
+			imageModel.setPositionImageTemplate(e.getX(), e.getY());
+			imageModel.addObserver(source);
 		}
 
 		@Override
