@@ -2,6 +2,7 @@ package co.com.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -90,7 +91,7 @@ public class BadgeWindow implements Observer {
 	private JTextField posYName;
 	private JTextField posYIDAndRH;
 	private JPanel panelResults;
-	private int width = 650;
+	private int width = 700;
 	private int height = 800;
 	private JLabel totalRecords;
 	private JLabel validRecords;
@@ -350,22 +351,35 @@ public class BadgeWindow implements Observer {
 
 	protected void createDesignPanel() {
 		panelPositions = new JPanel();
-		panelPositions.setSize(width, height);
 		panelPositions.setLayout(null);
-		panelImage = new JPanelImage(imageModel, textModels);
-		JScrollPane scrollPane = new JScrollPane(panelImage, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+		JScrollPane scrollPanePositions = new JScrollPane(panelPositions, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setAutoscrolls(true);
-		scrollPane.addComponentListener(new ComponentAdapter() {
+		scrollPanePositions.setAutoscrolls(true);
+		scrollPanePositions.setMinimumSize(new Dimension(125, height));
+		scrollPanePositions.setPreferredSize(new Dimension(125, height));
+		scrollPanePositions.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				panelPositions.revalidate();
+				panelPositions.repaint();
+			}
+		});
+		
+		panelImage = new JPanelImage(imageModel, textModels);
+		JScrollPane scrollPaneImage = new JScrollPane(panelImage, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPaneImage.setAutoscrolls(true);
+		scrollPaneImage.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				printImage();
 			}
 		});
-
-		panelDesign = new JSplitPane(SwingConstants.VERTICAL, panelPositions, scrollPane);
+		
+		panelDesign = new JSplitPane(SwingConstants.VERTICAL, scrollPanePositions, scrollPaneImage);
 		panelDesign.setOrientation(SwingConstants.VERTICAL);
-		panelDesign.setResizeWeight(0.3);
+		panelDesign.setSize(width, height);
+		panelDesign.setDividerLocation(280);
 		panelDesign.setContinuousLayout(true);
 		tabbedPane.addTab(BUNDLE.getString("design_panel_name"), null, panelDesign, null);
 
@@ -427,125 +441,19 @@ public class BadgeWindow implements Observer {
 		imageHeight.getDocument().addDocumentListener(new ImageBindingListener(imageModel, "heightImgTmpl"));
 		panelImage.add(imageHeight);
 
-		panelImage.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		panelImage.setBounds(iniX, iniY, 270, (accumulatedHeight-iniY));
 		
 		/** Role block **/
-		iniY=accumulatedHeight+10;
-		lineYPos=25;
-		accumulatedHeight+=lineYPos;
-		
-		JPanel panelRole = new JPanel();
-		panelRole.setBorder(new TitledBorder(null, BUNDLE.getString("design_role_label"), TitledBorder.LEADING,
-				TitledBorder.TOP, null, null));
-		panelRole.setLayout(null);
-		panelPositions.add(panelRole);
-
-		JLabel lblPosyRole = new JLabel(BUNDLE.getString("design_role_posy"));
-		lblPosyRole.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPosyRole.setBounds(12, lineYPos, 100, 19);
-		panelRole.add(lblPosyRole);
 		posYRole = new JTextField();
-		posYRole.setColumns(10);
-		posYRole.setBounds(106, lineYPos, 50, 19);
-		posYRole.getDocument().addDocumentListener(new TextBindingListener(textModels[0], "posY"));
-		panelRole.add(posYRole);
-		
-		lineYPos+=29;
-		accumulatedHeight += heightVar;
-		JLabel lblRoleFont = new JLabel(BUNDLE.getString("design_font"));
-		lblRoleFont.setHorizontalAlignment(SwingConstants.LEFT);
-		lblRoleFont.setBounds(12, lineYPos, 100, 19);
-		panelRole.add(lblRoleFont);
-		JLabel lblSetRoleFont = new JLabel(BUNDLE.getString("design_role_eg"));
-		lblSetRoleFont.setText(textModels[0].getFontDescription());
-		lblSetRoleFont.setToolTipText(textModels[0].getFontDescription());
-		lblSetRoleFont.setHorizontalAlignment(SwingConstants.LEFT);
-		lblSetRoleFont.setBounds(106, lineYPos, 50, 19);
-		lblSetRoleFont.addMouseListener(new MouseAdapter()  {  
-		    public void mouseClicked(MouseEvent e) {
-		    	textModels[0].setFont(loadFontChooser());
-				lblSetRoleFont.setText(textModels[0].getFontDescription());
-		    	lblSetRoleFont.setToolTipText(textModels[0].getFontDescription());
-		    }
-		}); 
-		panelRole.add(lblSetRoleFont);
-		
-		lineYPos+=29;
-		accumulatedHeight += heightVar;
-		JLabel lblRoleColor = new JLabel(BUNDLE.getString("design_color"));
-		lblRoleColor.setHorizontalAlignment(SwingConstants.LEFT);
-		lblRoleColor.setBounds(12, lineYPos, 100, 19);
-		panelRole.add(lblRoleColor);
-		JLabel lblSetRoleColor = new JLabel();
-		lblSetRoleColor.setOpaque(true);
-		lblSetRoleColor.setBackground(textModels[0].getColor());
-		lblSetRoleColor.setHorizontalAlignment(SwingConstants.LEFT);
-		lblSetRoleColor.setBounds(106, lineYPos, 50, 19);
-		lblSetRoleColor.addMouseListener(new MouseAdapter()  {  
-		    public void mouseClicked(MouseEvent e) {
-		    	lblSetRoleColor.setBackground(loadColorChooser());
-		    	textModels[0].setColor(lblSetRoleColor.getBackground());
-		    }  
-		});
-		panelRole.add(lblSetRoleColor);
-		
-		this.textModels[0].setText(BUNDLE.getString("design_role_eg"));
-		panelRole.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		accumulatedHeight = createFieldsBlock(panelPositions, "design_role_label", "design_role_posy", posYRole, "design_role_eg", textModels[0], accumulatedHeight, heightVar);
 		
 		/** Name block **/
-		iniY=accumulatedHeight+10;
-		lineYPos=25;
-		accumulatedHeight+=lineYPos;
-		
-		JPanel panelName = new JPanel();
-		panelName.setBorder(new TitledBorder(null, BUNDLE.getString("design_name_label"), TitledBorder.LEADING,
-				TitledBorder.TOP, null, null));
-		panelName.setLayout(null);
-		panelPositions.add(panelName);
-
-		JLabel lblPosyNombre = new JLabel(BUNDLE.getString("design_name_posy"));
-		lblPosyNombre.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPosyNombre.setBounds(12, lineYPos, 100, 19);
-		panelName.add(lblPosyNombre);
 		posYName = new JTextField();
-		posYName.setColumns(10);
-		posYName.setBounds(106, lineYPos, 50, 19);
-		posYName.getDocument().addDocumentListener(new TextBindingListener(textModels[1], "posY"));
-		panelName.add(posYName);
-
-		lineYPos+=29;
-		accumulatedHeight += heightVar;
-		
-		this.textModels[1].setText(BUNDLE.getString("design_name_eg"));
-		panelName.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		accumulatedHeight = createFieldsBlock(panelPositions, "design_name_label", "design_name_posy", posYName, "design_name_eg", textModels[1], accumulatedHeight, heightVar);
 		
 		/** ID and RH block **/
-		iniY=accumulatedHeight+10;
-		lineYPos=25;
-		accumulatedHeight+=lineYPos;
-		
-		JPanel panelIDAndRH = new JPanel();
-		panelIDAndRH.setBorder(new TitledBorder(null, BUNDLE.getString("design_id_label"), TitledBorder.LEADING,
-				TitledBorder.TOP, null, null));
-		panelIDAndRH.setLayout(null);
-		panelPositions.add(panelIDAndRH);
-
-		JLabel lblPosyCedRH = new JLabel(BUNDLE.getString("design_id_posy"));
-		lblPosyCedRH.setHorizontalAlignment(SwingConstants.LEFT);
-		lblPosyCedRH.setBounds(12, lineYPos, 100, 17);
-		panelIDAndRH.add(lblPosyCedRH);
 		posYIDAndRH = new JTextField();
-		posYIDAndRH.setColumns(10);
-		posYIDAndRH.setBounds(106, lineYPos, 50, 19);
-		posYIDAndRH.getDocument().addDocumentListener(new TextBindingListener(textModels[1], "posY"));
-		panelIDAndRH.add(posYIDAndRH);
-		
-		lineYPos+=29;
-		accumulatedHeight += heightVar;
-		
-		this.textModels[2].setText(BUNDLE.getString("design_id_eg"));
-		panelIDAndRH.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
-		
+		accumulatedHeight = createFieldsBlock(panelPositions, "design_id_label", "design_id_posy", posYIDAndRH, "design_id_eg", textModels[2], accumulatedHeight, heightVar);
 		
 		/** Process Button block **/
 		iniY=accumulatedHeight+10;
@@ -572,7 +480,7 @@ public class BadgeWindow implements Observer {
 		panelProcess.add(processBtn);
 		lineYPos+=29;
 		accumulatedHeight += heightVar;		
-		panelProcess.setBounds(iniX, iniY, 180, (accumulatedHeight-iniY));
+		panelProcess.setBounds(iniX, iniY, 280, (accumulatedHeight-iniY));
 		
 		panelPositions.add(panelProcess);
 	}
@@ -693,8 +601,11 @@ public class BadgeWindow implements Observer {
 		}
 	}
 	
-	private Font loadFontChooser() {
+	private Font loadFontChooser(Font font) {
 		FontDialog dialog = new FontDialog( );
+		if( font!=null ) {
+			dialog.setSelectedFont(font);
+		}
 		dialog.setTitle("Font Dialog Example");
 		dialog.setModal(true);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -797,5 +708,90 @@ public class BadgeWindow implements Observer {
 		if (value != null) {
 			component.setText(value);
 		}
+	}
+	
+	
+	/**
+	 * Method creates block for the text Y position, the text font and the text color.
+	 * The block is added to the container.  
+	 * @param panelLabel
+	 * @param fieldLabel
+	 * @param field
+	 * @param fieldExample
+	 * @param textModel
+	 * @param accumulatedHeight
+	 * @param heightVar
+	 * @return
+	 */
+	private int createFieldsBlock(JPanel container, String panelLabel, String fieldLabel, JTextField field, String fieldExample, BadgeTextModel textModel, int accumulatedHeight, int heightVar) {
+		int iniX=5;
+		int iniY=accumulatedHeight+10;
+		int lineYPos=25;
+		accumulatedHeight+=lineYPos;
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(null, BUNDLE.getString(panelLabel), TitledBorder.LEADING,
+				TitledBorder.TOP, null, null));
+		panel.setLayout(null);
+		container.add(panel);
+
+		JLabel lblPosy = new JLabel(BUNDLE.getString(fieldLabel));
+		lblPosy.setHorizontalAlignment(SwingConstants.LEFT);
+		lblPosy.setBounds(12, lineYPos, 100, 19);
+		panel.add(lblPosy);
+		field.setColumns(10);
+		field.setBounds(106, lineYPos, 50, 19);
+		field.getDocument().addDocumentListener(new TextBindingListener(textModel, "posY"));
+		panel.add(field);
+		
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
+		JLabel lblFont = new JLabel(BUNDLE.getString("design_font"));
+		lblFont.setHorizontalAlignment(SwingConstants.LEFT);
+		lblFont.setBounds(12, lineYPos, 100, 19);
+		panel.add(lblFont);
+		JLabel lblSetFont = new JLabel(BUNDLE.getString(fieldExample));
+		lblSetFont.setText(textModel.getFontDescription());
+		lblSetFont.setToolTipText(textModel.getFontDescription());
+		lblSetFont.setHorizontalAlignment(SwingConstants.LEFT);
+		lblSetFont.setBounds(106, lineYPos, 145, 19);
+		lblSetFont.addMouseListener(new MouseAdapter()  {  
+		    public void mouseClicked(MouseEvent e) {
+		    	Font font = loadFontChooser(textModel.getFont());
+		    	if(font!=null ) {
+			    	textModel.setFont(font);
+					lblSetFont.setText(textModel.getFontDescription());
+			    	lblSetFont.setToolTipText(textModel.getFontDescription());
+		    	}
+		    }
+		}); 
+		panel.add(lblSetFont);
+		
+		lineYPos+=29;
+		accumulatedHeight += heightVar;
+		JLabel lblColor = new JLabel(BUNDLE.getString("design_color"));
+		lblColor.setHorizontalAlignment(SwingConstants.LEFT);
+		lblColor.setBounds(12, lineYPos, 100, 19);
+		panel.add(lblColor);
+		JLabel lblSetColor = new JLabel();
+		lblSetColor.setOpaque(true);
+		lblSetColor.setBackground(textModel.getColor());
+		lblSetColor.setHorizontalAlignment(SwingConstants.LEFT);
+		lblSetColor.setBounds(106, lineYPos, 50, 19);
+		lblSetColor.addMouseListener(new MouseAdapter()  {  
+		    public void mouseClicked(MouseEvent e) {
+		    	Color color = loadColorChooser();
+		    	if( color!=null ) {
+			    	lblSetColor.setBackground(color);
+			    	textModel.setColor(lblSetColor.getBackground());
+		    	}
+		    }  
+		});
+		panel.add(lblSetColor);
+		
+		textModel.setText(BUNDLE.getString(fieldExample));
+		panel.setBounds(iniX, iniY, 270, (accumulatedHeight-iniY));
+		
+		return accumulatedHeight;
 	}
 }
