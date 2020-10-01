@@ -1,7 +1,5 @@
 package co.com.process;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.MessageFormat;
@@ -73,7 +71,7 @@ public class ProcessController extends Thread {
 						// Printing texts
 						BadgeTextModel cargoTM = new BadgeTextModel(role, this.textModels[0].getPosY(), this.textModels[0].getFont(), this.textModels[0].getColor());
 						BadgeTextModel nameTM = new BadgeTextModel(name, this.textModels[1].getPosY(), this.textModels[1].getFont(), this.textModels[1].getColor());
-						String idAndRH = typeID + " " + id + "		RH " + rh;
+						String idAndRH = typeID + " " + id.replaceAll("\"", "") + "    RH " + rh;
 						BadgeTextModel idAndRHTM = new BadgeTextModel(idAndRH, this.textModels[2].getPosY(), this.textModels[2].getFont(), this.textModels[2].getColor());
 						ImageHelper.printStringArrayTo(imageTo, new BadgeTextModel[] { nameTM, cargoTM, idAndRHTM });
 

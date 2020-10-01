@@ -2,6 +2,8 @@ package co.com.model;
 
 import java.util.Observable;
 
+import co.com.spreadsheet.ReaderHelper;
+
 public class BadgeTemplateModel extends Observable {
 
 	private String templateFile;
@@ -42,6 +44,10 @@ public class BadgeTemplateModel extends Observable {
 
 	public synchronized void setCsvFile(String csvFile) {
 		this.csvFile = csvFile;
+		String encoding = ReaderHelper.guessCharset(csvFile);
+		if( encoding != null ) {
+			setCsvFileEncoding(encoding);
+		}
 	}
 
 	public synchronized String getCsvFileDelimiter() {
@@ -56,8 +62,12 @@ public class BadgeTemplateModel extends Observable {
 		return csvFileEncoding;
 	}
 
-	public synchronized void setCsvFileEncoding(String csvFileEncoding) {
-		this.csvFileEncoding = csvFileEncoding;
+	public void setCsvFileEncoding(String csvFileEncoding) {
+		synchronized (this) {
+			this.csvFileEncoding = csvFileEncoding;
+		}
+		setChanged();
+		notifyObservers();
 	}
 
 	public synchronized String getInputFolder() {

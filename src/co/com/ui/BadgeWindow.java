@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 
@@ -145,6 +146,9 @@ public class BadgeWindow implements Observer {
 		this.processController = new ProcessController(dataModel, imageModel, textModels, resultModel);
 		initialize();
 		loadProperties();
+		//Load Favicon
+		ImageIcon img = new ImageIcon(BadgeWindow.class.getClassLoader().getResource("resources/favicon/favicon.ico"));
+		this.frame.setIconImage(img.getImage());
 	}
 
 	/*
@@ -159,6 +163,8 @@ public class BadgeWindow implements Observer {
 			this.posYImgTmpl.setText("" + imageModel.getPosYImgTmpl());
 			this.imageWidth.setText("" + imageModel.getWidthImgTmpl());
 			this.imageHeight.setText("" + imageModel.getHeightImgTmpl());
+		} else if (o instanceof BadgeTemplateModel) {
+			this.encoding.setSelectedItem(dataModel.getCsvFileEncoding());
 		} else if (o instanceof BadgeResultModel) {
 			this.totalRecords.setText("" + resultModel.getTotalRecords());
 			this.errorRecords.setText("" + resultModel.getErrorRecords());

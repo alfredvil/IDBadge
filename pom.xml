@@ -13,6 +13,11 @@
 			<artifactId>fontchooser</artifactId>
 			<version>2.4</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.any23</groupId>
+			<artifactId>apache-any23-encoding</artifactId>
+			<version>1.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>src</sourceDirectory>

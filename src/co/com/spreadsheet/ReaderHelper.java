@@ -1,5 +1,6 @@
 package co.com.spreadsheet;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -9,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.any23.encoding.TikaEncodingDetector;
 
 public class ReaderHelper {
 	String pathCSV;
@@ -42,7 +45,7 @@ public class ReaderHelper {
 		Path path = Paths.get(this.pathCSV);
 		if (Files.exists(path)) {
 			try {
-				this.fileLines = Files.lines(path, Charset.forName(this.encoding)).map(l -> l.split(this.delimiter))
+				this.fileLines = Files.lines(path, Charset.forName(this.encoding)).map(l -> l.split(this.delimiter+"(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
 						.collect(Collectors.toList());
 			} catch (IOException e) {
 				return;
@@ -80,5 +83,14 @@ public class ReaderHelper {
 
 	public int getNumberRows() {
 		return this.fileLines.size();
+	}
+	
+	public static String guessCharset(String path) {
+		try {
+			FileInputStream is = new FileInputStream(path);
+			return new TikaEncodingDetector().guessEncoding(is);
+		} catch(Exception e) {
+			return null;
+		}
 	}
 }

@@ -3,7 +3,10 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
@@ -20,7 +23,7 @@ import co.com.spreadsheet.ReaderHelper;
 
 public class main {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		FontDialog dialog = new FontDialog( );
 		dialog.setTitle("Font Dialog Example");
