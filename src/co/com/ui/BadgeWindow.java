@@ -238,7 +238,7 @@ public class BadgeWindow implements Observer {
 
 		JButton btnSelecTempl = new JButton(BUNDLE.getString("select_btn"));
 		btnSelecTempl.setFont(new Font("Dialog", Font.PLAIN, 10));
-		btnSelecTempl.setBounds(488, 23, 89, 17);
+		btnSelecTempl.setBounds(488, 23, 95, 17);
 		btnSelecTempl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectImgButtonActionPerformed(e);
@@ -265,7 +265,7 @@ public class BadgeWindow implements Observer {
 
 		JButton btnSelecFoldImgs = new JButton(BUNDLE.getString("select_btn"));
 		btnSelecFoldImgs.setFont(new Font("Dialog", Font.PLAIN, 10));
-		btnSelecFoldImgs.setBounds(488, 52, 89, 17);
+		btnSelecFoldImgs.setBounds(488, 52, 95, 17);
 		btnSelecFoldImgs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectFolderButtonActionPerformed(e);
@@ -292,7 +292,7 @@ public class BadgeWindow implements Observer {
 
 		JButton btnSelecCSVFile = new JButton(BUNDLE.getString("select_btn"));
 		btnSelecCSVFile.setFont(new Font("Dialog", Font.PLAIN, 10));
-		btnSelecCSVFile.setBounds(488, 81, 89, 17);
+		btnSelecCSVFile.setBounds(488, 81, 95, 17);
 		btnSelecCSVFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectCSVButtonActionPerformed(e);
@@ -344,7 +344,7 @@ public class BadgeWindow implements Observer {
 
 		JButton btnSelecFoldResult = new JButton(BUNDLE.getString("select_btn"));
 		btnSelecFoldResult.setFont(new Font("Dialog", Font.PLAIN, 10));
-		btnSelecFoldResult.setBounds(488, 25, 89, 17);
+		btnSelecFoldResult.setBounds(488, 25, 95, 17);
 		btnSelecFoldResult.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				selectFolderResultButtonActionPerformed(e);
